@@ -20,6 +20,7 @@ import {
   createTransitionString,
   getNativeNode,
   getPositionDelta,
+  getSizeRatio,
   getRelativeBoundingBox,
   removeNodeFromDOMFlow,
   updateHeightPlaceholder,
@@ -271,7 +272,13 @@ class FlipMove extends Component<ConvertedProps, FlipMoveState> {
       getPosition,
     });
 
-    return dX !== 0 || dY !== 0;
+    const [rW, rH] = getSizeRatio({
+      childDomNode,
+      childBoundingBox,
+      getPosition,
+    });
+
+    return dX !== 0 || dY !== 0 || rW !== 1 || rH !== 1;
   };
 
   calculateNextSetOfChildren(
@@ -479,6 +486,7 @@ class FlipMove extends Component<ConvertedProps, FlipMoveState> {
 
       // Remove the 'transition' inline style we added. This is cleanup.
       domNode.style.transition = '';
+      domNode.style.transformOrigin = '';
 
       // Trigger any applicable onFinish/onFinishAll hooks
       this.triggerFinishHooks(child, domNode);
@@ -656,8 +664,15 @@ class FlipMove extends Component<ConvertedProps, FlipMoveState> {
       getPosition: this.props.getPosition,
     });
 
+    const [rW, rH] = getSizeRatio({
+      childDomNode,
+      childBoundingBox,
+      getPosition: this.props.getPosition,
+    });
+
     return {
-      transform: `translate(${dX}px, ${dY}px)`,
+      transform: `translate(${dX}px, ${dY}px) scale(${rW}, ${rH})`,
+      transformOrigin: `0px 0px`,
     };
   }
 

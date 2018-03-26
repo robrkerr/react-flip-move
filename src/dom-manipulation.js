@@ -129,6 +129,49 @@ export const getPositionDelta = ({
   ];
 };
 
+/** getSizeRatio
+ * This method returns the size ratio between two bounding boxes, to figure out
+ * by what factor in each axis the element has been scaled.
+ *
+ */
+export const getSizeRatio = ({
+  childDomNode,
+  childBoundingBox,
+  getPosition,
+}: {
+  childDomNode: HTMLElement,
+  childBoundingBox: ?ClientRect,
+  getPosition: GetPosition,
+}): [number, number] => {
+  // TEMP: A mystery bug is sometimes causing unnecessary boundingBoxes to
+  // remain. Until this bug can be solved, this band-aid fix does the job:
+  const defaultBox: ClientRect = {
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 0,
+    width: 0,
+  };
+
+  // Our old box is its last calculated position, derived on mount or at the
+  // start of the previous animation.
+  const oldRelativeBox = childBoundingBox || defaultBox;
+
+  // Our new box is the new final resting place: Where we expect it to wind up
+  // after the animation.
+  const newAbsoluteBox = getPosition(childDomNode);
+
+  return [
+    oldRelativeBox.width !== 0 && newAbsoluteBox.width !== 0
+      ? oldRelativeBox.width / newAbsoluteBox.width
+      : 1,
+    oldRelativeBox.height !== 0 && newAbsoluteBox.height !== 0
+      ? oldRelativeBox.height / newAbsoluteBox.height
+      : 1,
+  ];
+};
+
 /** removeNodeFromDOMFlow
  * This method does something very sneaky: it removes a DOM node from the
  * document flow, but without actually changing its on-screen position.
